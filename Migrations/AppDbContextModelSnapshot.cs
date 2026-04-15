@@ -3,6 +3,7 @@ using System;
 using CourseManagementSystem.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -15,24 +16,35 @@ namespace CourseManagementSystem.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.5");
+            modelBuilder
+                .HasAnnotation("ProductVersion", "8.0.5")
+                .HasAnnotation("Relational:MaxIdentifierLength", 64);
+
+            MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
             modelBuilder.Entity("CourseManagementSystem.Models.Course", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
 
-                    b.Property<int?>("InstructorId")
-                        .HasColumnType("INTEGER");
+                    b.Property<int>("InstructorId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.HasKey("Id");
 
@@ -45,16 +57,18 @@ namespace CourseManagementSystem.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CourseId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("EnrollmentDate")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int>("StudentId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -65,54 +79,36 @@ namespace CourseManagementSystem.Migrations
                     b.ToTable("Enrollments");
                 });
 
-            modelBuilder.Entity("CourseManagementSystem.Models.InstructorProfile", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Bio")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Specialization")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("InstructorProfiles");
-                });
-
             modelBuilder.Entity("CourseManagementSystem.Models.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("varchar(255)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
 
                     b.ToTable("Users");
                 });
@@ -120,8 +116,10 @@ namespace CourseManagementSystem.Migrations
             modelBuilder.Entity("CourseManagementSystem.Models.Course", b =>
                 {
                     b.HasOne("CourseManagementSystem.Models.User", "Instructor")
-                        .WithMany()
-                        .HasForeignKey("InstructorId");
+                        .WithMany("Courses")
+                        .HasForeignKey("InstructorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Instructor");
                 });
@@ -129,13 +127,13 @@ namespace CourseManagementSystem.Migrations
             modelBuilder.Entity("CourseManagementSystem.Models.Enrollment", b =>
                 {
                     b.HasOne("CourseManagementSystem.Models.Course", "Course")
-                        .WithMany()
+                        .WithMany("Enrollments")
                         .HasForeignKey("CourseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("CourseManagementSystem.Models.User", "Student")
-                        .WithMany()
+                        .WithMany("Enrollments")
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -145,21 +143,16 @@ namespace CourseManagementSystem.Migrations
                     b.Navigation("Student");
                 });
 
-            modelBuilder.Entity("CourseManagementSystem.Models.InstructorProfile", b =>
+            modelBuilder.Entity("CourseManagementSystem.Models.Course", b =>
                 {
-                    b.HasOne("CourseManagementSystem.Models.User", "User")
-                        .WithOne("InstructorProfile")
-                        .HasForeignKey("CourseManagementSystem.Models.InstructorProfile", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
+                    b.Navigation("Enrollments");
                 });
 
             modelBuilder.Entity("CourseManagementSystem.Models.User", b =>
                 {
-                    b.Navigation("InstructorProfile")
-                        .IsRequired();
+                    b.Navigation("Courses");
+
+                    b.Navigation("Enrollments");
                 });
 #pragma warning restore 612, 618
         }

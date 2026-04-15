@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using CourseManagementSystem.Models;
 
 namespace CourseManagementSystem.DTOs
 {
@@ -15,6 +16,6 @@ namespace CourseManagementSystem.DTOs
         public string Password { get; set; }
 
         [Required]
-        public string Role { get; set; }
+        public UserRole Role { get; set; }
     }
 }

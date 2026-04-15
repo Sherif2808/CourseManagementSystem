@@ -1,11 +1,11 @@
 using System.ComponentModel.DataAnnotations;
+using CourseManagementSystem.DTOs;
 
 namespace CourseManagementSystem.DTOs
 {
     public class CreateCourseDto
     {
         [Required]
-        [MaxLength(100)]
         public string Title { get; set; }
 
         [Required]

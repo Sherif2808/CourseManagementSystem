@@ -33,7 +33,7 @@ namespace CourseManagementSystem.Services
             {
                 Title = dto.Title,
                 Description = dto.Description,
-                InstructorId = null
+                InstructorId = dto.InstructorId
             };
 
             _context.Courses.Add(course);

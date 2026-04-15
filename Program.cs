@@ -8,10 +8,18 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite("Data Source=course.db")
+    options.UseMySql(
+        "server=localhost;database=CourseDb;user=root;password=01273333773;",
+        new MySqlServerVersion(new Version(8, 0, 0))
+    )
 );
 
 builder.Services.AddScoped<ICourseService, CourseService>();
